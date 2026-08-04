@@ -1,57 +1,80 @@
-using UnityEngine;
-using TMPro;
 using System.Collections;
+using TMPro;
+using UnityEngine;
 
 public class TalkManager : MonoBehaviour
 {
+    public static TalkManager Instance;
+
     public AudioSource audioSource;
     public AudioClip typingSound;
     public float typingSpeed = 0.03f;
-
-    Coroutine typingCoroutine;
-    public static TalkManager Instance;
-
     public TMP_Text talkText;
 
-    void Awake()
+    private Coroutine typingCoroutine;
+
+    private void Awake()
     {
         Instance = this;
     }
-    IEnumerator TypeText(string text)
+
+    public void Show(string text)
     {
-        talkText.text = "";
-
-        foreach (char c in text)
+        if (string.IsNullOrEmpty(text))
         {
-            talkText.text += c;
+            Clear();
+            return;
+        }
 
-            // 효과음이 등록되어 있을 때만 재생
-            if (audioSource != null &&
-                typingSound != null &&
-                c != ' ' &&
-                c != '\n')
+        if (typingCoroutine != null)
+            StopCoroutine(typingCoroutine);
+
+        typingCoroutine = StartCoroutine(TypeText(text));
+    }
+
+    public void Clear()
+    {
+        if (typingCoroutine != null)
+        {
+            StopCoroutine(typingCoroutine);
+            typingCoroutine = null;
+        }
+
+        if (talkText != null)
+            talkText.text = string.Empty;
+    }
+
+    private IEnumerator TypeText(string text)
+    {
+        if (talkText == null)
+        {
+            typingCoroutine = null;
+            yield break;
+        }
+
+        talkText.text = string.Empty;
+
+        foreach (char character in text)
+        {
+            talkText.text += character;
+
+            if (audioSource != null
+                && typingSound != null
+                && character != ' '
+                && character != '\n')
             {
-                audioSource.pitch = Random.Range(0.95f, 1.05f);
+                audioSource.pitch = UnityEngine.Random.Range(0.95f, 1.05f);
                 audioSource.PlayOneShot(typingSound, 0.35f);
             }
 
-            if (c == '.' || c == '!' || c == '?')
+            if (character == '.' || character == '!' || character == '?')
                 yield return new WaitForSeconds(0.25f);
-
-            else if (c == ',')
+            else if (character == ',')
                 yield return new WaitForSeconds(0.15f);
-
             else
                 yield return new WaitForSeconds(typingSpeed);
         }
 
         typingCoroutine = null;
-    }
-    public void Show(string text)
-    {
-        if (typingCoroutine != null)
-            StopCoroutine(typingCoroutine);
-
-        typingCoroutine = StartCoroutine(TypeText(text));
     }
 }

@@ -1,145 +1,176 @@
-using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using DrPlant.Data;
+using DrPlant.Gameplay;
+using UnityEngine;
 
 public class PlantStatus : MonoBehaviour
 {
-    public List<string> requiredTreatments = new List<string>();
-    //모든 식물이 가진 상태
-    [Header("Status")]
+    [HideInInspector] public List<string> requiredTreatments = new List<string>();
 
     [Header("Sprites")]
-
     public Sprite normalSprite;
     public Sprite deadSprite;
-    SpriteRenderer sr;
-    public float hp = 100;
 
-    public float humidity = 50;
-
-    public float temperature = 25;
-
-    public float boredom = 30;
-
+    [Header("Status")]
+    public float hp = 100f;
+    public float humidity = 50f;
+    public float temperature = 50f;
+    public float boredom = 30f;
     public bool diagnosed;
-
     public bool treated;
-
     public bool isDead;
+    public string currentMessage = "...";
 
-    void Start()
+    private SpriteRenderer spriteRenderer;
+    private PatientCase patientCase;
+    private string lastDialogue;
+
+    public PatientCase PatientCase => patientCase;
+
+    private void Awake()
     {
-        sr = GetComponent<SpriteRenderer>();
-
-        normalSprite = sr.sprite;
-        
-        hp = Random.Range(60f, 100f);
-        humidity = Random.Range(40f, 100f);
-        GenerateRandomSymptoms();
+        EnsureSpriteRenderer();
     }
-    public void GenerateRandomSymptoms()
+
+    private void Start()
     {
-        requiredTreatments.Clear();
+        EnsureSpriteRenderer();
 
-        requiredTreatments.Add("물 주기");
-        requiredTreatments.Add("음악 들려주기");
+        if (patientCase == null)
+            SetHealthyDefaults();
     }
+
+    public void Initialize(PatientCase newCase)
+    {
+        patientCase = newCase;
+        diagnosed = false;
+        treated = false;
+        isDead = false;
+        currentMessage = "...";
+        lastDialogue = string.Empty;
+
+        EnsureSpriteRenderer();
+        SetHealthyDefaults();
+        ApplySymptoms(newCase.Symptoms);
+    }
+
+    public string GetDialogue()
+    {
+        DrPlantContentCatalog catalog = DrPlantContent.Catalog;
+
+        if (catalog == null || patientCase == null)
+            return currentMessage;
+
+        IReadOnlyList<string> dialoguePool = catalog.Dialogues.Normal;
+        bool useSymptomDialogue =
+            UnityEngine.Random.value >= catalog.Rules.NormalDialogueChance;
+
+        if (useSymptomDialogue && patientCase.Symptoms.Count > 0)
+        {
+            SymptomDefinition symptom =
+                patientCase.Symptoms[
+                    UnityEngine.Random.Range(0, patientCase.Symptoms.Count)];
+
+            if (symptom.Dialogues.Count > 0)
+                dialoguePool = symptom.Dialogues;
+        }
+
+        currentMessage = SelectNonRepeated(dialoguePool, lastDialogue);
+        lastDialogue = currentMessage;
+        return currentMessage;
+    }
+
     public IEnumerator ShockEffect()
     {
-        for (int i = 0; i < 6; i++)
+        EnsureSpriteRenderer();
+
+        for (int index = 0; index < 6; index++)
         {
-            sr.enabled = false;
-
+            spriteRenderer.enabled = false;
             yield return new WaitForSeconds(0.08f);
-
-            sr.enabled = true;
-
+            spriteRenderer.enabled = true;
             yield return new WaitForSeconds(0.08f);
         }
     }
 
     public void Revive()
     {
+        EnsureSpriteRenderer();
+
         isDead = false;
-
-        hp = 40;
-
-        sr.sprite = normalSprite;
-
-        currentMessage = "살아났어요!";
+        hp = 40f;
+        spriteRenderer.sprite = normalSprite;
+        currentMessage = "...";
     }
-    
-    void Update()
+
+    private void SetHealthyDefaults()
     {
-        
+        hp = UnityEngine.Random.Range(70f, 96f);
+        humidity = UnityEngine.Random.Range(45f, 76f);
+        temperature = UnityEngine.Random.Range(40f, 61f);
+        boredom = UnityEngine.Random.Range(10f, 41f);
     }
-    public string currentMessage =
-        "몸이 으슬으슬해요.";
-    
 
-    public List<string> GetTalks()
+    private void ApplySymptoms(IReadOnlyList<SymptomDefinition> symptoms)
     {
-        List<string> talks = new List<string>();
+        for (int index = 0; index < symptoms.Count; index++)
+        {
+            switch (symptoms[index].Id)
+            {
+                case SymptomId.Dehydration:
+                    humidity = UnityEngine.Random.Range(5f, 21f);
+                    break;
 
-        // HP
-        if (hp < 20)
-        {
-            talks.Add("몸에 힘이 하나도 없어요...");
-            talks.Add("기운이 없어요...");
-        }
-        else if (hp > 80)
-        {
-            talks.Add("너무 활력이 넘쳐요!");
-            talks.Add("에너지가 넘쳐요!");
-        }
+                case SymptomId.Hot:
+                    temperature = UnityEngine.Random.Range(82f, 101f);
+                    break;
 
-        // Humidity
-        if (humidity < 20)
-        {
-            talks.Add("목 말라요...");
-            talks.Add("물 한 잔만 주세요...");
-        }
-        else if (humidity > 80)
-        {
-            talks.Add("더는 못 마시겠어요...");
-            talks.Add("배가 물로 가득 찼어요...");
-        }
+                case SymptomId.Cold:
+                    temperature = UnityEngine.Random.Range(0f, 16f);
+                    break;
 
-        // Temperature
-        if (temperature < 20)
-        {
-            talks.Add("으으... 너무 추워요.");
-            talks.Add("따뜻한 곳으로 가고 싶어요.");
-        }
-        else if (temperature > 80)
-        {
-            talks.Add("여기 너무 덥지 않나요?");
-            talks.Add("잎이 타버릴 것 같아요...");
-        }
+                case SymptomId.Malnutrition:
+                    hp = UnityEngine.Random.Range(30f, 51f);
+                    break;
 
-        // Boredom
-        if (boredom > 80)
-        {
-            talks.Add("심심해서 죽겠어요...");
-            talks.Add("노래 좀 들려주세요!");
+                case SymptomId.Boredom:
+                    boredom = UnityEngine.Random.Range(82f, 101f);
+                    break;
+
+                case SymptomId.Overgrown:
+                    hp = Mathf.Min(hp, UnityEngine.Random.Range(55f, 71f));
+                    break;
+            }
         }
-
-        // 정상 상태
-        if (talks.Count == 0)
-        {
-            talks.Add("오늘은 기분이 좋아요!");
-            talks.Add("햇빛이 참 좋네요.");
-            talks.Add("흙 냄새가 좋아요.");
-            talks.Add("오늘도 열심히 자라는 중이에요!");
-        }
-
-        // 잡담(항상 추가)
-        talks.Add("벌이 놀러 왔어요.");
-        talks.Add("오늘 날씨가 좋네요.");
-        talks.Add("잎이 반짝반짝해요.");
-        talks.Add("꽃을 피우고 싶어요.");
-
-        return talks;
     }
-    
+
+    private void EnsureSpriteRenderer()
+    {
+        if (spriteRenderer == null)
+            spriteRenderer = GetComponent<SpriteRenderer>();
+
+        if (spriteRenderer != null && normalSprite == null)
+            normalSprite = spriteRenderer.sprite;
+    }
+
+    private static string SelectNonRepeated(
+        IReadOnlyList<string> values,
+        string previous)
+    {
+        if (values == null || values.Count == 0)
+            return "...";
+
+        int startIndex = UnityEngine.Random.Range(0, values.Count);
+
+        for (int offset = 0; offset < values.Count; offset++)
+        {
+            string candidate = values[(startIndex + offset) % values.Count];
+
+            if (values.Count == 1 || candidate != previous)
+                return candidate;
+        }
+
+        return values[startIndex];
+    }
 }

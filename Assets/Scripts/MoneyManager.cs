@@ -1,33 +1,32 @@
-using UnityEngine;
 using TMPro;
+using UnityEngine;
 
 public class MoneyManager : MonoBehaviour
 {
     public static MoneyManager Instance;
 
     public TMP_Text moneyText;
+    public int money;
 
-    public int money = 0;
-
-    void Awake()
+    private void Awake()
     {
         Instance = this;
     }
 
-    void Start()
+    private void Start()
     {
         UpdateMoneyUI();
     }
 
-    void UpdateMoneyUI()
-    {
-        moneyText.text = "$ " + money;
-    }
-
     public void AddMoney(int amount)
     {
-        money += amount;
+        money = Mathf.Max(0, money + amount);
+        UpdateMoneyUI();
+    }
 
-        moneyText.text = money + " G";
+    private void UpdateMoneyUI()
+    {
+        if (moneyText != null)
+            moneyText.text = $"{money} G";
     }
 }

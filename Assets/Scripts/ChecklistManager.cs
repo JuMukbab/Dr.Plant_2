@@ -1,59 +1,128 @@
+using System.Collections.Generic;
+using DrPlant.Data;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-using System.Collections.Generic;
 
 public class ChecklistManager : MonoBehaviour
 {
     public static ChecklistManager Instance;
+
     public List<Toggle> toggles = new List<Toggle>();
     public Transform content;
-
     public GameObject togglePrefab;
 
-    void Start()
-    {
-        Debug.Log("checklistmanager START");
-        AddTreatment("물 주기");
-        AddTreatment("음악 들려주기");
-        AddTreatment("잎 닦기");
-        AddTreatment("햇빛 쬐어주기");
-    }
-    void Awake()
+    private readonly Dictionary<Toggle, TreatmentId> treatmentIds =
+        new Dictionary<Toggle, TreatmentId>();
+    private bool initialized;
+
+    internal int ItemCount => treatmentIds.Count;
+
+    private void Awake()
     {
         Instance = this;
     }
-    public void AddTreatment(string treatmentName)
+
+    public void EnsureInitialized()
     {
-        GameObject obj =
-            Instantiate(togglePrefab, content);
-
-        TextMeshProUGUI text =
-            obj.GetComponentInChildren<TextMeshProUGUI>();
-
-        text.text = treatmentName;
-        Toggle toggle =
-            obj.GetComponent<Toggle>();
-
-        toggle.isOn = false;
-
-        toggles.Add(toggle);
+        if (!initialized)
+            RebuildAvailableTreatments(null);
     }
-    public List<string> GetCheckedTreatments()
+
+    public void RebuildAvailableTreatments(
+        ISet<ShopItemId> purchasedShopItems)
     {
-        List<string> result = new List<string>();
+        ClearItems();
 
-        foreach(Toggle toggle in toggles)
+        DrPlantContentCatalog catalog = DrPlantContent.Catalog;
+        if (catalog == null || content == null || togglePrefab == null)
         {
-            if(toggle.isOn)
-            {
-                TextMeshProUGUI text =
-                    toggle.GetComponentInChildren<TextMeshProUGUI>();
+            Debug.LogError("ChecklistManager is missing its catalog or UI references.");
+            return;
+        }
 
-                result.Add(text.text);
+        foreach (TreatmentDefinition treatment in catalog.Treatments)
+        {
+            if (catalog.IsTreatmentUnlocked(treatment.Id, purchasedShopItems))
+                AddTreatment(treatment);
+        }
+
+        initialized = true;
+    }
+
+    public List<TreatmentId> GetCheckedTreatments()
+    {
+        EnsureInitialized();
+
+        List<TreatmentId> result = new List<TreatmentId>();
+
+        foreach (Toggle toggle in toggles)
+        {
+            if (toggle != null
+                && toggle.isOn
+                && treatmentIds.TryGetValue(toggle, out TreatmentId treatmentId))
+            {
+                result.Add(treatmentId);
             }
         }
 
         return result;
+    }
+
+    public void ResetSelections()
+    {
+        EnsureInitialized();
+
+        foreach (Toggle toggle in toggles)
+        {
+            if (toggle != null)
+                toggle.SetIsOnWithoutNotify(false);
+        }
+    }
+
+    internal void SetSelectedTreatments(ISet<TreatmentId> selectedTreatments)
+    {
+        EnsureInitialized();
+
+        foreach (KeyValuePair<Toggle, TreatmentId> entry in treatmentIds)
+        {
+            bool isSelected = selectedTreatments != null
+                && selectedTreatments.Contains(entry.Value);
+
+            entry.Key.SetIsOnWithoutNotify(isSelected);
+        }
+    }
+
+    private void AddTreatment(TreatmentDefinition treatment)
+    {
+        GameObject itemObject = Instantiate(togglePrefab, content);
+        Toggle toggle = itemObject.GetComponent<Toggle>();
+        TextMeshProUGUI label = itemObject.GetComponentInChildren<TextMeshProUGUI>();
+
+        if (toggle == null || label == null)
+        {
+            Debug.LogError("Treatment toggle prefab needs a Toggle and TextMeshProUGUI.");
+            Destroy(itemObject);
+            return;
+        }
+
+        label.text = treatment.DisplayName;
+        toggle.SetIsOnWithoutNotify(false);
+
+        toggles.Add(toggle);
+        treatmentIds.Add(toggle, treatment.Id);
+    }
+
+    private void ClearItems()
+    {
+        foreach (Toggle toggle in toggles)
+        {
+            if (toggle != null)
+                Destroy(toggle.gameObject);
+        }
+
+        toggles.Clear();
+        treatmentIds.Clear();
+        initialized = false;
     }
 }
