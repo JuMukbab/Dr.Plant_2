@@ -26,26 +26,56 @@ MonoBehaviour:
     prefab: {fileID: 4522486075534867654, guid: d68057393f50f3346aea149e1bf215bb, type: 3}
     animationSpeed: 0.65
     displayScale: 6.5
+    voice:
+      frequency: 650
+      waveform: 0
+      volume: 0.045
+      duration: 0.045
+      pitchVariation: 45
   - id: 2
     displayName: "\uCF69 \uD658\uC790"
     prefab: {fileID: 7808518742635211303, guid: 14230f45c5f3e8645a773447799481ef, type: 3}
     animationSpeed: 0.8
     displayScale: 6.5
+    voice:
+      frequency: 500
+      waveform: 1
+      volume: 0.025
+      duration: 0.035
+      pitchVariation: 60
   - id: 3
     displayName: "\uC120\uC778\uC7A5 \uD658\uC790"
     prefab: {fileID: 8141225504599312046, guid: d1229b76dadbe4a4a94d98a076ae671e, type: 3}
     animationSpeed: 0.7
     displayScale: 6.5
+    voice:
+      frequency: 340
+      waveform: 2
+      volume: 0.04
+      duration: 0.055
+      pitchVariation: 30
   - id: 4
     displayName: "\uC0C8\uC2F9 \uD658\uC790"
     prefab: {fileID: 0}
     animationSpeed: 0.75
-    displayScale: 6.5
+    displayScale: 7
+    voice:
+      frequency: 760
+      waveform: 0
+      volume: 0.035
+      duration: 0.035
+      pitchVariation: 70
   - id: 5
     displayName: "\uB2E4\uC721\uC774 \uD658\uC790"
     prefab: {fileID: 0}
     animationSpeed: 0.8
     displayScale: 6.5
+    voice:
+      frequency: 430
+      waveform: 2
+      volume: 0.04
+      duration: 0.06
+      pitchVariation: 35
   symptoms:
   - id: 1
     displayName: "\uC218\uBD84 \uBD80\uC871"

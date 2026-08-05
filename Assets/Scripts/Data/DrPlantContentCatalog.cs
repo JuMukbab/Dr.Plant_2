@@ -162,6 +162,25 @@ namespace DrPlant.Data
 
                 if (string.IsNullOrWhiteSpace(patient.DisplayName))
                     errors.Add($"Patient {patient.Id} needs a display name.");
+
+                PatientVoiceProfile voice = patient.Voice;
+                if (voice == null)
+                {
+                    errors.Add($"Patient {patient.Id} needs a voice profile.");
+                    continue;
+                }
+
+                if (voice.Frequency < 80f)
+                    errors.Add($"Patient {patient.Id} voice frequency is too low.");
+
+                if (voice.Volume <= 0f)
+                    errors.Add($"Patient {patient.Id} voice volume must be positive.");
+
+                if (voice.Duration <= 0f)
+                    errors.Add($"Patient {patient.Id} voice duration must be positive.");
+
+                if (voice.PitchVariation < 0f)
+                    errors.Add($"Patient {patient.Id} pitch variation cannot be negative.");
             }
         }
 

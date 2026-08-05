@@ -17,6 +17,12 @@ public static class DrPlantGameplayVerifier
         Require(catalog != null, "Content catalog could not be loaded.");
         Require(catalog.TryGetPatient(PatientId.Flower, out PatientDefinition patient),
             "Flower patient is missing.");
+        Require(patient.Voice != null, "Flower patient voice is missing.");
+        Require(
+            Mathf.Approximately(patient.Voice.Frequency, 650f)
+            && patient.Voice.Waveform == PatientVoiceWaveform.Sine
+            && Mathf.Approximately(patient.Voice.PitchVariation, 45f),
+            "Flower patient voice does not match the source data.");
         Require(catalog.TryGetSymptom(
             SymptomId.Dehydration,
             out SymptomDefinition dehydration),

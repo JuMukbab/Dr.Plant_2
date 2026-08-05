@@ -78,32 +78,77 @@ public static class DrPlantContentSeeder
                 "꽃 환자",
                 LoadPrefab("Flower"),
                 animationSpeed: 0.65f,
-                displayScale: 6.5f),
+                displayScale: 6.5f,
+                voice: Voice(
+                    frequency: 650f,
+                    waveform: PatientVoiceWaveform.Sine,
+                    volume: 0.045f,
+                    duration: 0.045f,
+                    pitchVariation: 45f)),
             new PatientDefinition(
                 PatientId.Bean,
                 "콩 환자",
                 LoadPrefab("Mr.Bean"),
                 animationSpeed: 0.80f,
-                displayScale: 6.5f),
+                displayScale: 6.5f,
+                voice: Voice(
+                    frequency: 500f,
+                    waveform: PatientVoiceWaveform.Square,
+                    volume: 0.025f,
+                    duration: 0.035f,
+                    pitchVariation: 60f)),
             new PatientDefinition(
                 PatientId.Cactus,
                 "선인장 환자",
                 LoadPrefab("Cactus"),
                 animationSpeed: 0.70f,
-                displayScale: 6.5f),
+                displayScale: 6.5f,
+                voice: Voice(
+                    frequency: 340f,
+                    waveform: PatientVoiceWaveform.Triangle,
+                    volume: 0.040f,
+                    duration: 0.055f,
+                    pitchVariation: 30f)),
             new PatientDefinition(
                 PatientId.Sprout,
                 "새싹 환자",
                 prefab: null,
                 animationSpeed: 0.75f,
-                displayScale: 6.5f),
+                displayScale: 7.0f,
+                voice: Voice(
+                    frequency: 760f,
+                    waveform: PatientVoiceWaveform.Sine,
+                    volume: 0.035f,
+                    duration: 0.035f,
+                    pitchVariation: 70f)),
             new PatientDefinition(
                 PatientId.Succulent,
                 "다육이 환자",
                 prefab: null,
                 animationSpeed: 0.80f,
-                displayScale: 6.5f)
+                displayScale: 6.5f,
+                voice: Voice(
+                    frequency: 430f,
+                    waveform: PatientVoiceWaveform.Triangle,
+                    volume: 0.040f,
+                    duration: 0.060f,
+                    pitchVariation: 35f))
         };
+    }
+
+    private static PatientVoiceProfile Voice(
+        float frequency,
+        PatientVoiceWaveform waveform,
+        float volume,
+        float duration,
+        float pitchVariation)
+    {
+        return new PatientVoiceProfile(
+            frequency,
+            waveform,
+            volume,
+            duration,
+            pitchVariation);
     }
 
     private static TreatmentDefinition[] BuildTreatments()

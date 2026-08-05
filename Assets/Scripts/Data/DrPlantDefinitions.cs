@@ -4,6 +4,43 @@ using UnityEngine;
 
 namespace DrPlant.Data
 {
+    public enum PatientVoiceWaveform
+    {
+        Sine,
+        Square,
+        Triangle
+    }
+
+    [Serializable]
+    public sealed class PatientVoiceProfile
+    {
+        [SerializeField, Min(80f)] private float frequency = 500f;
+        [SerializeField] private PatientVoiceWaveform waveform = PatientVoiceWaveform.Sine;
+        [SerializeField, Range(0f, 1f)] private float volume = 0.04f;
+        [SerializeField, Min(0.01f)] private float duration = 0.045f;
+        [SerializeField, Min(0f)] private float pitchVariation = 40f;
+
+        public float Frequency => frequency;
+        public PatientVoiceWaveform Waveform => waveform;
+        public float Volume => volume;
+        public float Duration => duration;
+        public float PitchVariation => pitchVariation;
+
+        public PatientVoiceProfile(
+            float frequency,
+            PatientVoiceWaveform waveform,
+            float volume,
+            float duration,
+            float pitchVariation)
+        {
+            this.frequency = frequency;
+            this.waveform = waveform;
+            this.volume = volume;
+            this.duration = duration;
+            this.pitchVariation = pitchVariation;
+        }
+    }
+
     [Serializable]
     public sealed class PatientDefinition
     {
@@ -12,12 +49,14 @@ namespace DrPlant.Data
         [SerializeField] private GameObject prefab;
         [SerializeField, Min(0.1f)] private float animationSpeed = 0.75f;
         [SerializeField, Min(0.1f)] private float displayScale = 6.5f;
+        [SerializeField] private PatientVoiceProfile voice;
 
         public PatientId Id => id;
         public string DisplayName => displayName;
         public GameObject Prefab => prefab;
         public float AnimationSpeed => animationSpeed;
         public float DisplayScale => displayScale;
+        public PatientVoiceProfile Voice => voice;
         public bool IsPlayable => prefab != null;
 
         public PatientDefinition(
@@ -25,13 +64,15 @@ namespace DrPlant.Data
             string displayName,
             GameObject prefab,
             float animationSpeed,
-            float displayScale)
+            float displayScale,
+            PatientVoiceProfile voice)
         {
             this.id = id;
             this.displayName = displayName;
             this.prefab = prefab;
             this.animationSpeed = animationSpeed;
             this.displayScale = displayScale;
+            this.voice = voice;
         }
     }
 
