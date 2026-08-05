@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using DrPlant.Data;
 using DrPlant.Gameplay;
+using DrPlant.Progression;
 using UnityEngine;
 
 public sealed class DrPlantRuntimeSmokeVerifier : MonoBehaviour
@@ -45,7 +46,12 @@ public sealed class DrPlantRuntimeSmokeVerifier : MonoBehaviour
         PatientManager patientManager = PatientManager.Instance;
         ChecklistManager checklistManager = ChecklistManager.Instance;
         MoneyManager moneyManager = MoneyManager.Instance;
+        ShopManager shopManager = ShopManager.Instance;
         DrPlantContentCatalog catalog = DrPlantContent.Catalog;
+        ClinicProgress progress = ClinicProgress.Instance;
+
+        progress.Reset();
+        yield return null;
 
         if (!patientManager.PatientReady)
         {
@@ -68,9 +74,102 @@ public sealed class DrPlantRuntimeSmokeVerifier : MonoBehaviour
             yield break;
         }
 
+        if (!Check(shopManager.ItemCount == catalog.ShopItems.Count,
+            $"Expected {catalog.ShopItems.Count} shop items, found {shopManager.ItemCount}."))
+        {
+            yield break;
+        }
+
+        if (!Check(
+            shopManager.TryPurchase(ShopItemId.Instrument)
+                == PurchaseResult.InsufficientFunds,
+            "A purchase succeeded without enough money."))
+        {
+            yield break;
+        }
+
+        int totalPrice = 0;
+        foreach (ShopItemDefinition item in catalog.ShopItems)
+            totalPrice += item.Price;
+
+        progress.AddMoney(totalPrice);
+
+        for (int index = 0; index < catalog.ShopItems.Count; index++)
+        {
+            ShopItemDefinition item = catalog.ShopItems[index];
+
+            if (!Check(
+                shopManager.TryPurchase(item.Id) == PurchaseResult.Success,
+                $"Could not purchase {item.Id}."))
+            {
+                yield break;
+            }
+
+            if (!Check(
+                checklistManager.ItemCount == 5 + index,
+                $"Checklist did not unlock treatment {item.UnlockedTreatment}."))
+            {
+                yield break;
+            }
+        }
+
+        ShopItemDefinition firstItem = catalog.ShopItems[0];
+        int moneyAfterPurchases = progress.Money;
+
+        if (!Check(
+            shopManager.TryPurchase(firstItem.Id) == PurchaseResult.AlreadyPurchased,
+            "A duplicate purchase was not rejected."))
+        {
+            yield break;
+        }
+
+        if (!Check(
+            progress.Money == moneyAfterPurchases,
+            "A duplicate purchase changed the saved money."))
+        {
+            yield break;
+        }
+
+        if (!Check(
+            progress.PurchasedItemCount == catalog.ShopItems.Count,
+            "Not all purchased items were recorded."))
+        {
+            yield break;
+        }
+
+        HashSet<ShopItemId> purchasedItems = progress.GetPurchasedShopItems();
+
+        if (!Check(
+            catalog.IsSymptomUnlocked(SymptomId.Boredom, purchasedItems)
+            && catalog.IsSymptomUnlocked(SymptomId.Overgrown, purchasedItems),
+            "Purchased tools did not unlock advanced symptoms."))
+        {
+            yield break;
+        }
+
+        if (!Check(
+            VerifyUnlockedCases(catalog, purchasedItems),
+            "Generated cases did not use the purchased symptom unlocks."))
+        {
+            yield break;
+        }
+
+        progress.Reload();
+
+        if (!Check(
+            progress.PurchasedItemCount == catalog.ShopItems.Count
+            && checklistManager.ItemCount == 7,
+            "Purchased items did not survive a save reload."))
+        {
+            yield break;
+        }
+
         PatientCase firstCase = patientManager.CurrentCase;
         GameObject firstPatient = patientManager.CurrentPatient;
-        HashSet<TreatmentId> correctTreatments = BuildCorrectTreatments(firstCase, catalog);
+        HashSet<TreatmentId> correctTreatments = BuildCorrectTreatments(
+            firstCase,
+            catalog,
+            progress.GetPurchasedShopItems());
 
         if (!Check(correctTreatments.Count == firstCase.Symptoms.Count,
             "Could not choose one unlocked treatment for each symptom."))
@@ -80,6 +179,7 @@ public sealed class DrPlantRuntimeSmokeVerifier : MonoBehaviour
 
         checklistManager.SetSelectedTreatments(correctTreatments);
         int moneyBefore = moneyManager.money;
+        int treatedBefore = progress.TreatedPatientCount;
 
         patientManager.SendPatient();
 
@@ -88,6 +188,25 @@ public sealed class DrPlantRuntimeSmokeVerifier : MonoBehaviour
             reward >= catalog.Rules.CorrectRewardMin
             && reward <= catalog.Rules.CorrectRewardMax,
             $"Correct treatment reward was outside the configured range: {reward}."))
+        {
+            yield break;
+        }
+
+        if (!Check(
+            progress.TreatedPatientCount == treatedBefore + 1,
+            "Treated patient progress was not recorded."))
+        {
+            yield break;
+        }
+
+        int savedMoney = progress.Money;
+        int savedTreatedCount = progress.TreatedPatientCount;
+        progress.Reload();
+
+        if (!Check(
+            progress.Money == savedMoney
+            && progress.TreatedPatientCount == savedTreatedCount,
+            "Money or treated patient count did not survive a save reload."))
         {
             yield break;
         }
@@ -116,7 +235,8 @@ public sealed class DrPlantRuntimeSmokeVerifier : MonoBehaviour
         if (!Check(patientManager.PatientReady, "The next patient did not become ready."))
             yield break;
 
-        Debug.Log("Dr.Plant runtime core loop smoke test passed.");
+        progress.DeleteSave();
+        Debug.Log("Dr.Plant progression, shop, and save smoke test passed.");
         Application.Quit(0);
     }
 
@@ -127,6 +247,8 @@ public sealed class DrPlantRuntimeSmokeVerifier : MonoBehaviour
             && PatientManager.Instance.CurrentCase != null
             && ChecklistManager.Instance != null
             && MoneyManager.Instance != null
+            && ShopManager.Instance != null
+            && ShopManager.Instance.ItemCount > 0
             && DrPlantContent.Catalog != null;
     }
 
@@ -145,9 +267,33 @@ public sealed class DrPlantRuntimeSmokeVerifier : MonoBehaviour
         return true;
     }
 
+    private static bool VerifyUnlockedCases(
+        DrPlantContentCatalog catalog,
+        ISet<ShopItemId> purchasedItems)
+    {
+        bool foundBoredom = false;
+        bool foundOvergrown = false;
+
+        for (int index = 0; index < 250; index++)
+        {
+            PatientCase generated = PatientCaseGenerator.Create(catalog, purchasedItems);
+            foundBoredom |= generated.HasSymptom(SymptomId.Boredom);
+            foundOvergrown |= generated.HasSymptom(SymptomId.Overgrown);
+
+            if (generated.HasSymptom(SymptomId.Hot)
+                && generated.HasSymptom(SymptomId.Cold))
+            {
+                return false;
+            }
+        }
+
+        return foundBoredom && foundOvergrown;
+    }
+
     private static HashSet<TreatmentId> BuildCorrectTreatments(
         PatientCase patientCase,
-        DrPlantContentCatalog catalog)
+        DrPlantContentCatalog catalog,
+        ISet<ShopItemId> purchasedItems)
     {
         HashSet<TreatmentId> selected = new HashSet<TreatmentId>();
 
@@ -156,7 +302,7 @@ public sealed class DrPlantRuntimeSmokeVerifier : MonoBehaviour
             foreach (TreatmentId treatmentId in symptom.AcceptedTreatments)
             {
                 if (!selected.Contains(treatmentId)
-                    && catalog.IsTreatmentUnlocked(treatmentId, null))
+                    && catalog.IsTreatmentUnlocked(treatmentId, purchasedItems))
                 {
                     selected.Add(treatmentId);
                     break;

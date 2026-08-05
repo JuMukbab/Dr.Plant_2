@@ -1,36 +1,70 @@
+using DrPlant.Data;
+using DrPlant.Progression;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class ShopItem : MonoBehaviour
 {
-    private int itemPrice;
     public Image icon;
     public TextMeshProUGUI itemName;
     public TextMeshProUGUI priceText;
     public Button buyButton;
 
-    public void Setup(string name, int price)
-    {
-        itemName.text = name;
-        priceText.text = price + " G";
+    private ShopItemDefinition definition;
 
-        itemPrice = price;
+    internal ShopItemId ItemId =>
+        definition != null ? definition.Id : ShopItemId.None;
 
-        buyButton.onClick.RemoveAllListeners();
-        buyButton.onClick.AddListener(BuyItem);
-    }
-    void BuyItem()
+    public void Setup(ShopItemDefinition itemDefinition)
     {
-        if (MoneyManager.Instance.money < itemPrice)
+        definition = itemDefinition;
+
+        if (definition == null)
         {
-            Debug.Log("돈 부족");
-
+            Debug.LogError("ShopItem cannot be set up without a definition.");
             return;
         }
 
-        MoneyManager.Instance.AddMoney(-itemPrice);
+        if (itemName != null)
+            itemName.text = definition.DisplayName;
 
-        Destroy(gameObject);
+        if (buyButton != null)
+        {
+            buyButton.onClick.RemoveAllListeners();
+            buyButton.onClick.AddListener(BuyItem);
+        }
+
+        Refresh(ClinicProgress.Instance);
+    }
+
+    public void Refresh(ClinicProgress progress)
+    {
+        if (definition == null || progress == null)
+            return;
+
+        bool purchased = progress.IsPurchased(definition.Id);
+        bool affordable = progress.Money >= definition.Price;
+
+        if (priceText != null)
+        {
+            priceText.text = purchased
+                ? "구매 완료"
+                : $"{definition.Price} G";
+        }
+
+        if (buyButton != null)
+            buyButton.interactable = !purchased && affordable;
+    }
+
+    private void BuyItem()
+    {
+        if (definition == null || ShopManager.Instance == null)
+            return;
+
+        PurchaseResult result = ShopManager.Instance.TryPurchase(definition.Id);
+
+        if (result == PurchaseResult.InsufficientFunds)
+            Debug.Log($"골드가 부족합니다: {definition.DisplayName}");
     }
 }

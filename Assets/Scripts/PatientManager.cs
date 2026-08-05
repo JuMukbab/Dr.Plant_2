@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using DrPlant.Data;
 using DrPlant.Gameplay;
+using DrPlant.Progression;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -70,7 +71,9 @@ public class PatientManager : MonoBehaviour
 
         try
         {
-            currentCase = PatientCaseGenerator.Create(catalog);
+            currentCase = PatientCaseGenerator.Create(
+                catalog,
+                ClinicProgress.Instance.GetPurchasedShopItems());
         }
         catch (Exception exception)
         {
@@ -139,8 +142,7 @@ public class PatientManager : MonoBehaviour
         if (status != null)
             status.treated = true;
 
-        if (MoneyManager.Instance != null)
-            MoneyManager.Instance.AddMoney(outcome.Reward);
+        ClinicProgress.Instance.CompleteTreatment(outcome.Reward);
 
         ShowReview(outcome);
         TalkManager.Instance?.Clear();

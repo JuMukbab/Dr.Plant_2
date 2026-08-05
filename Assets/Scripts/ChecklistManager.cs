@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using DrPlant.Data;
+using DrPlant.Progression;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -26,7 +27,13 @@ public class ChecklistManager : MonoBehaviour
     public void EnsureInitialized()
     {
         if (!initialized)
-            RebuildAvailableTreatments(null);
+            RefreshFromProgress();
+    }
+
+    public void RefreshFromProgress()
+    {
+        RebuildAvailableTreatments(
+            ClinicProgress.Instance.GetPurchasedShopItems());
     }
 
     public void RebuildAvailableTreatments(

@@ -1,3 +1,4 @@
+using DrPlant.Progression;
 using TMPro;
 using UnityEngine;
 
@@ -11,21 +12,27 @@ public class MoneyManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        ClinicProgress.Instance.Changed += RefreshFromProgress;
+        RefreshFromProgress();
     }
 
-    private void Start()
+    private void OnDestroy()
     {
-        UpdateMoneyUI();
+        if (Instance == this)
+            Instance = null;
+
+        ClinicProgress.Instance.Changed -= RefreshFromProgress;
     }
 
     public void AddMoney(int amount)
     {
-        money = Mathf.Max(0, money + amount);
-        UpdateMoneyUI();
+        ClinicProgress.Instance.AddMoney(amount);
     }
 
-    private void UpdateMoneyUI()
+    private void RefreshFromProgress()
     {
+        money = ClinicProgress.Instance.Money;
+
         if (moneyText != null)
             moneyText.text = $"{money} G";
     }
