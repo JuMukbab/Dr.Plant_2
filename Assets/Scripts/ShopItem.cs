@@ -12,6 +12,7 @@ public class ShopItem : MonoBehaviour
     public Button buyButton;
 
     private ShopItemDefinition definition;
+    private TextMeshProUGUI buttonLabel;
 
     internal ShopItemId ItemId =>
         definition != null ? definition.Id : ShopItemId.None;
@@ -26,11 +27,20 @@ public class ShopItem : MonoBehaviour
             return;
         }
 
+        if (icon != null)
+            icon.gameObject.SetActive(false);
+
         if (itemName != null)
-            itemName.text = definition.DisplayName;
+        {
+            itemName.text =
+                $"{definition.DisplayName}\n"
+                + $"<size=22><color=#52695B>{definition.Description}</color></size>";
+            itemName.enableWordWrapping = true;
+        }
 
         if (buyButton != null)
         {
+            buttonLabel = buyButton.GetComponentInChildren<TextMeshProUGUI>(true);
             buyButton.onClick.RemoveAllListeners();
             buyButton.onClick.AddListener(BuyItem);
         }
@@ -49,12 +59,19 @@ public class ShopItem : MonoBehaviour
         if (priceText != null)
         {
             priceText.text = purchased
-                ? "구매 완료"
+                ? "보유 중"
                 : $"{definition.Price} G";
         }
 
         if (buyButton != null)
             buyButton.interactable = !purchased && affordable;
+
+        if (buttonLabel != null)
+        {
+            buttonLabel.text = purchased
+                ? "완료"
+                : affordable ? "구매" : "부족";
+        }
     }
 
     private void BuyItem()

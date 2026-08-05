@@ -32,12 +32,21 @@ public class PatientManager : MonoBehaviour
     private string lastBadReview;
 
     public bool PatientReady => patientReady && !patientLeaving && currentPatient != null;
+    public PatientCase ActiveCase => currentCase;
+    public event Action<PatientCase> ActiveCaseChanged;
+
     internal PatientCase CurrentCase => currentCase;
     internal GameObject CurrentPatient => currentPatient;
 
     private void Awake()
     {
         Instance = this;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
     }
 
     private void Start()
@@ -101,6 +110,7 @@ public class PatientManager : MonoBehaviour
         status.Initialize(currentCase);
         StatusBar.Instance?.SetTarget(status);
         ChecklistManager.Instance?.ResetSelections();
+        ActiveCaseChanged?.Invoke(currentCase);
 
         PatientMove move = currentPatient.GetComponent<PatientMove>();
         if (move == null)
@@ -206,6 +216,7 @@ public class PatientManager : MonoBehaviour
         Destroy(departingPatient);
         currentPatient = null;
         currentCase = null;
+        ActiveCaseChanged?.Invoke(null);
         patientLeaving = false;
 
         SpawnPatient();
