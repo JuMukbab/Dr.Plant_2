@@ -1,192 +1,271 @@
+using System;
+using System.Collections.Generic;
+using DrPlant.Data;
+using DrPlant.Gameplay;
+using DrPlant.Progression;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections.Generic;
+
 public class PatientManager : MonoBehaviour
 {
-    public GameObject[] patientPrefabs;
-
-    GameObject currentPatient;
     public static PatientManager Instance;
-    public int wrongTreatmentCount = 0;
 
+    [HideInInspector] public GameObject[] patientPrefabs;
+
+    public int wrongTreatmentCount;
     public int correctTreatmentCount;
     public int missedTreatmentCount;
     public int wrongCheckedTreatmentCount;
+
     public Transform spawnPoint;
     public Transform centerPoint;
     public Transform exitPoint;
-    bool patientLeaving = false;
     public Button nextButton;
-    void Start()
-    {
-        SpawnPatient();
-    }
-    void Awake()
+
+    private DrPlantContentCatalog catalog;
+    private GameObject currentPatient;
+    private PatientCase currentCase;
+    private bool patientLeaving;
+    private bool patientReady;
+    private string lastArrivalDialogue;
+    private string lastGoodReview;
+    private string lastBadReview;
+
+    public bool PatientReady => patientReady && !patientLeaving && currentPatient != null;
+    public PatientCase ActiveCase => currentCase;
+    public event Action<PatientCase> ActiveCaseChanged;
+
+    internal PatientCase CurrentCase => currentCase;
+    internal GameObject CurrentPatient => currentPatient;
+
+    private void Awake()
     {
         Instance = this;
     }
-    void EvaluateTreatment()
-    {
-        PlantStatus status =
-            currentPatient.GetComponent<PlantStatus>();
-        List<string> playerTreatments =
-            ChecklistManager.Instance.GetCheckedTreatments();
-        
-        correctTreatmentCount = 0;
-        wrongCheckedTreatmentCount = 0;
-        missedTreatmentCount = 0;
 
-        foreach(string treatment in status.requiredTreatments)
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
+    }
+
+    private void Start()
+    {
+        catalog = DrPlantContent.Catalog;
+
+        if (catalog == null)
         {
-            if(playerTreatments.Contains(treatment))
-            {
-                correctTreatmentCount++;
-            }
-            else
-            {
-                missedTreatmentCount++;
-            }
+            enabled = false;
+
+            if (nextButton != null)
+                nextButton.interactable = false;
+
+            return;
         }
-        foreach (string treatment in playerTreatments)
-        {
-            if (!status.requiredTreatments.Contains(treatment))
-            {
-                wrongCheckedTreatmentCount++;
-            }
-        }
-        // Debug.Log("==========");
 
-        // Debug.Log("맞은 치료 : " + correctTreatmentCount);
-        // Debug.Log("빠뜨린 치료 : " + missedTreatmentCount);
-        // Debug.Log("잘못한 치료 : " + wrongCheckedTreatmentCount);
-
-        // Debug.Log("==========");
+        ChecklistManager.Instance?.EnsureInitialized();
+        SpawnPatient();
     }
-    int CalculateScore(PlantStatus status)
-    {
-        int score = 100;
-
-        // HP
-        if (status.hp < 60)
-            score -= 30;
-
-        // 습도
-        if (status.humidity < 30)
-            score -= 20;
-
-        if (status.humidity > 90)
-            score -= 10;
-
-        // 지루함
-        if (status.boredom > 80)
-            score -= 20;
-
-        // 죽었으면 0점
-        if (status.isDead)
-            score = 0;
-
-        score -= wrongCheckedTreatmentCount * 15;
-
-        score -= missedTreatmentCount * 20;
-
-        score += correctTreatmentCount * 5;
-
-        return Mathf.Clamp(score, 0, 100);
-    }
-    public void AddWrongTreatment()
-    {
-        wrongTreatmentCount++;
-
-        Debug.Log("잘못된 치료 : " + wrongTreatmentCount);
-    }
-        
 
     public void SpawnPatient()
     {
-        wrongTreatmentCount = 0;
-        int random = Random.Range(0, patientPrefabs.Length);
+        if (currentPatient != null || patientLeaving)
+            return;
 
-        currentPatient =
-            Instantiate(patientPrefabs[random],
-                        spawnPoint.position,
-                        Quaternion.identity);
-        StatusBar.Instance.SetTarget(
-            currentPatient.GetComponent<PlantStatus>());
+        ResetTreatmentCounters();
+        patientReady = false;
 
-        PatientMove move =
-            currentPatient.GetComponent<PatientMove>();
+        if (nextButton != null)
+            nextButton.interactable = false;
 
+        try
+        {
+            currentCase = PatientCaseGenerator.Create(
+                catalog,
+                ClinicProgress.Instance.GetPurchasedShopItems());
+        }
+        catch (Exception exception)
+        {
+            Debug.LogException(exception);
+            enabled = false;
+            return;
+        }
+
+        currentPatient = Instantiate(
+            currentCase.Patient.Prefab,
+            spawnPoint.position,
+            Quaternion.identity);
+
+        PlantStatus status = currentPatient.GetComponent<PlantStatus>();
+        if (status == null)
+        {
+            Debug.LogError(
+                $"Patient prefab {currentCase.Patient.DisplayName} is missing PlantStatus.");
+            Destroy(currentPatient);
+            currentPatient = null;
+            enabled = false;
+            return;
+        }
+
+        status.Initialize(currentCase);
+        StatusBar.Instance?.SetTarget(status);
+        ChecklistManager.Instance?.ResetSelections();
+        ActiveCaseChanged?.Invoke(currentCase);
+
+        PatientMove move = currentPatient.GetComponent<PatientMove>();
+        if (move == null)
+        {
+            currentPatient.transform.position = centerPoint.position;
+            HandlePatientArrived(currentPatient);
+            return;
+        }
+
+        GameObject arrivingPatient = currentPatient;
+        move.onArrive = () => HandlePatientArrived(arrivingPatient);
         move.MoveTo(centerPoint.position);
     }
 
     public void SendPatient()
     {
-        if (currentPatient == null)
-            return;
-
-        if (patientLeaving)
+        if (!PatientReady || currentCase == null)
             return;
 
         patientLeaving = true;
+        patientReady = false;
 
-        nextButton.interactable = false;
+        if (nextButton != null)
+            nextButton.interactable = false;
 
-        PlantStatus status =
-            currentPatient.GetComponent<PlantStatus>();
+        List<TreatmentId> selectedTreatments =
+            ChecklistManager.Instance != null
+                ? ChecklistManager.Instance.GetCheckedTreatments()
+                : new List<TreatmentId>();
 
-        EvaluateTreatment();
+        TreatmentOutcome outcome = TreatmentEvaluator.Evaluate(
+            currentCase,
+            selectedTreatments,
+            catalog.Rules);
 
-        int score = CalculateScore(status);
+        UpdateTreatmentCounters(outcome.IsCorrect, selectedTreatments.Count);
 
-        PatientReview review =
-            currentPatient.GetComponent<PatientReview>();
+        PlantStatus status = currentPatient.GetComponent<PlantStatus>();
+        if (status != null)
+            status.treated = true;
 
-        review.ShowReview(GetReview());
+        ClinicProgress.Instance.CompleteTreatment(outcome.Reward);
 
-        MoneyManager.Instance.AddMoney(score);
+        ShowReview(outcome);
+        TalkManager.Instance?.Clear();
 
-        PatientMove move =
-            currentPatient.GetComponent<PatientMove>();
+        PatientMove move = currentPatient.GetComponent<PatientMove>();
+        GameObject departingPatient = currentPatient;
 
-        move.MoveTo(exitPoint.position);
-
-        move.onArrive = () =>
+        if (move == null)
         {
-            Destroy(currentPatient);
-
-            currentPatient = null;
-
-            SpawnPatient();
-
-            patientLeaving = false;
-
-            nextButton.interactable = true;
-        };
-    }
-
-    string GetReview()
-    {
-        if(wrongCheckedTreatmentCount == 0 &&
-        missedTreatmentCount == 0)
-        {
-            string[] reviews =
-            {
-                "정말 감사합니다!",
-                "몸이 훨씬 좋아졌어요!",
-                "최고의 치료였어요!"
-            };
-
-            return reviews[Random.Range(0,reviews.Length)];
+            CompleteDeparture(departingPatient);
+            return;
         }
 
-        string[] badReviews =
-        {
-            "더는 못 마시겠어요...",
-            "조금 아팠어요...",
-            "다음엔 더 잘 부탁드려요..."
-        };
-
-        return badReviews[Random.Range(0,badReviews.Length)];
+        move.onArrive = () => CompleteDeparture(departingPatient);
+        move.MoveTo(exitPoint.position);
     }
-    
+
+    public void AddWrongTreatment()
+    {
+        wrongTreatmentCount++;
+    }
+
+    private void HandlePatientArrived(GameObject arrivingPatient)
+    {
+        if (arrivingPatient != currentPatient || patientLeaving)
+            return;
+
+        patientReady = true;
+
+        if (nextButton != null)
+            nextButton.interactable = true;
+
+        string arrival = SelectNonRepeated(
+            catalog.Dialogues.Arrival,
+            ref lastArrivalDialogue);
+
+        if (!string.IsNullOrEmpty(arrival))
+            TalkManager.Instance?.Show(arrival);
+    }
+
+    private void ShowReview(TreatmentOutcome outcome)
+    {
+        IReadOnlyList<string> reviews = outcome.IsCorrect
+            ? catalog.Dialogues.GoodReviews
+            : catalog.Dialogues.BadReviews;
+
+        string review = outcome.IsCorrect
+            ? SelectNonRepeated(reviews, ref lastGoodReview)
+            : SelectNonRepeated(reviews, ref lastBadReview);
+
+        PatientReview patientReview = currentPatient.GetComponent<PatientReview>();
+        if (patientReview != null)
+            patientReview.ShowReview($"{review} (+{outcome.Reward} G)");
+    }
+
+    private void CompleteDeparture(GameObject departingPatient)
+    {
+        if (departingPatient != currentPatient)
+            return;
+
+        Destroy(departingPatient);
+        currentPatient = null;
+        currentCase = null;
+        ActiveCaseChanged?.Invoke(null);
+        patientLeaving = false;
+
+        SpawnPatient();
+    }
+
+    private void ResetTreatmentCounters()
+    {
+        wrongTreatmentCount = 0;
+        correctTreatmentCount = 0;
+        missedTreatmentCount = 0;
+        wrongCheckedTreatmentCount = 0;
+    }
+
+    private void UpdateTreatmentCounters(bool isCorrect, int selectedCount)
+    {
+        if (isCorrect)
+        {
+            correctTreatmentCount = currentCase.Symptoms.Count;
+            missedTreatmentCount = 0;
+            wrongCheckedTreatmentCount = 0;
+            return;
+        }
+
+        correctTreatmentCount = 0;
+        missedTreatmentCount = currentCase.Symptoms.Count;
+        wrongCheckedTreatmentCount = selectedCount;
+    }
+
+    private static string SelectNonRepeated(
+        IReadOnlyList<string> values,
+        ref string previous)
+    {
+        if (values == null || values.Count == 0)
+            return string.Empty;
+
+        int startIndex = UnityEngine.Random.Range(0, values.Count);
+
+        for (int offset = 0; offset < values.Count; offset++)
+        {
+            string candidate = values[(startIndex + offset) % values.Count];
+
+            if (values.Count == 1 || candidate != previous)
+            {
+                previous = candidate;
+                return candidate;
+            }
+        }
+
+        previous = values[startIndex];
+        return previous;
+    }
 }
