@@ -4,23 +4,18 @@ public class ShopUI : MonoBehaviour
 {
     public GameObject shopPanel;
 
-    private void Start()
+    void Start()
     {
-        if (shopPanel != null)
-            shopPanel.SetActive(false);
+        shopPanel.SetActive(false);
     }
 
     public void OpenShop()
     {
-        ShopManager.Instance?.RefreshItems();
-
-        if (shopPanel != null)
-            shopPanel.SetActive(true);
+        shopPanel.SetActive(true);
     }
 
     public void CloseShop()
     {
-        if (shopPanel != null)
-            shopPanel.SetActive(false);
+        shopPanel.SetActive(false);
     }
 }

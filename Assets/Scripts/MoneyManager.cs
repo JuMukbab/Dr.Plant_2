@@ -1,39 +1,33 @@
-using DrPlant.Progression;
-using TMPro;
 using UnityEngine;
+using TMPro;
 
 public class MoneyManager : MonoBehaviour
 {
     public static MoneyManager Instance;
 
     public TMP_Text moneyText;
-    public int money;
 
-    private void Awake()
+    public int money = 0;
+
+    void Awake()
     {
         Instance = this;
-        ClinicProgress.Instance.Changed += RefreshFromProgress;
-        RefreshFromProgress();
     }
 
-    private void OnDestroy()
+    void Start()
     {
-        if (Instance == this)
-            Instance = null;
+        UpdateMoneyUI();
+    }
 
-        ClinicProgress.Instance.Changed -= RefreshFromProgress;
+    void UpdateMoneyUI()
+    {
+        moneyText.text = "$ " + money;
     }
 
     public void AddMoney(int amount)
     {
-        ClinicProgress.Instance.AddMoney(amount);
-    }
+        money += amount;
 
-    private void RefreshFromProgress()
-    {
-        money = ClinicProgress.Instance.Money;
-
-        if (moneyText != null)
-            moneyText.text = $"{money} G";
+        moneyText.text = money + " G";
     }
 }

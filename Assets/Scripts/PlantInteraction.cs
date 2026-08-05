@@ -1,28 +1,27 @@
 using UnityEngine;
-
+using System.Collections;
+using System.Collections.Generic;
 public class PlantInteraction : MonoBehaviour
 {
-    private PlantStatus status;
+    
+    PlantStatus status;
 
-    private void Awake()
+    void Start()
     {
         status = GetComponent<PlantStatus>();
     }
 
-    private void OnMouseDown()
+    void Examine()
     {
-        if (status == null)
-            return;
+        List<string> talks = status.GetTalks();
 
-        if (PatientManager.Instance != null
-            && !PatientManager.Instance.PatientReady)
-        {
-            return;
-        }
+        string talk =
+            talks[Random.Range(0, talks.Count)];
 
-        string dialogue = status.GetDialogue();
-
-        if (!string.IsNullOrEmpty(dialogue))
-            TalkManager.Instance?.Show(dialogue);
+        TalkManager.Instance.Show(talk);
+    }
+    void OnMouseDown()
+    {
+        Examine();
     }
 }
