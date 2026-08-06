@@ -229,6 +229,7 @@ GameObject:
   - component: {fileID: 1829519315467981919}
   - component: {fileID: 7624715993845211456}
   - component: {fileID: 4976215247313915452}
+  - component: {fileID: 5069474239860802081}
   m_Layer: 0
   m_Name: Cactus
   m_TagString: Plant
@@ -254,7 +255,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &7806278888945080600
 SpriteRenderer:
-  serializedVersion: 2
+  serializedVersion: 3
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -311,6 +312,7 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+  m_BlendShapeWeights: []
 --- !u!114 &-5932249728334255973
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -423,11 +425,32 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 2.8, y: 2.7}
+    oldSize: {x: 3.2, y: 3.2}
     newSize: {x: 2.8, y: 2.7}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 3, y: 2.8}
+  m_Size: {x: 2.45, y: 2.45}
   m_EdgeRadius: 0
+--- !u!114 &5069474239860802081
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8141225504599312046}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f7405c89e8de49439fe093eee6fa9e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PatientVisualController
+  animationFrames:
+  - {fileID: 7873444928579934181, guid: 7bcb6b2ac1df30a4c947545664a607be, type: 3}
+  - {fileID: 4438351552130452648, guid: 7bcb6b2ac1df30a4c947545664a607be, type: 3}
+  - {fileID: -8484647995636279456, guid: 7bcb6b2ac1df30a4c947545664a607be, type: 3}
+  - {fileID: 1464250414856482592, guid: 7bcb6b2ac1df30a4c947545664a607be, type: 3}
+  - {fileID: -4471450805393876877, guid: 7bcb6b2ac1df30a4c947545664a607be, type: 3}
+  - {fileID: -6142298138049817622, guid: 7bcb6b2ac1df30a4c947545664a607be, type: 3}
+  - {fileID: -6977608548097279171, guid: 7bcb6b2ac1df30a4c947545664a607be, type: 3}
+  sunglassesSprite: {fileID: 21300000, guid: d2ae39ced0cecdc409c708953e7a904f, type: 3}

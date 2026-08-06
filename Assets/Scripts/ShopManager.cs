@@ -78,7 +78,12 @@ public class ShopManager : MonoBehaviour
             return PurchaseResult.UnknownItem;
         }
 
-        return ClinicProgress.Instance.TryPurchase(definition);
+        PurchaseResult result = ClinicProgress.Instance.TryPurchase(definition);
+
+        if (result == PurchaseResult.Success)
+            ClinicAudioManager.Instance?.PlayPurchase();
+
+        return result;
     }
 
     public void RefreshItems()

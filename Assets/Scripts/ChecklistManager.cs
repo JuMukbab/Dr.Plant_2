@@ -116,6 +116,8 @@ public class ChecklistManager : MonoBehaviour
         label.text = treatment.DisplayName;
         toggle.SetIsOnWithoutNotify(false);
 
+        toggle.onValueChanged.AddListener(HandleToggleChanged);
+
         toggles.Add(toggle);
         treatmentIds.Add(toggle, treatment.Id);
     }
@@ -131,5 +133,10 @@ public class ChecklistManager : MonoBehaviour
         toggles.Clear();
         treatmentIds.Clear();
         initialized = false;
+    }
+
+    private static void HandleToggleChanged(bool selected)
+    {
+        ClinicAudioManager.Instance?.PlayChecklistToggle(selected);
     }
 }

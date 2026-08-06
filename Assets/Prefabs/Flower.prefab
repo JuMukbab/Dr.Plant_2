@@ -197,6 +197,7 @@ GameObject:
   - component: {fileID: -714977147256814480}
   - component: {fileID: -4377669397953562969}
   - component: {fileID: 5252231593784941217}
+  - component: {fileID: 4908004590436817777}
   m_Layer: 0
   m_Name: Flower
   m_TagString: Plant
@@ -222,7 +223,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &1117028827204138806
 SpriteRenderer:
-  serializedVersion: 2
+  serializedVersion: 3
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -279,6 +280,7 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+  m_BlendShapeWeights: []
 --- !u!114 &-4315724437517845116
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -364,13 +366,13 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 3, y: 2.9}
+    oldSize: {x: 3.2, y: 3.2}
     newSize: {x: 3, y: 2.9}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 3.2, y: 3}
+  m_Size: {x: 2.45, y: 2.45}
   m_EdgeRadius: 0
 --- !u!114 &-4377669397953562969
 MonoBehaviour:
@@ -399,6 +401,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PatientReview
   reviewObject: {fileID: 5378601697315828359}
   reviewText: {fileID: 2691444573949473368}
+--- !u!114 &4908004590436817777
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4522486075534867654}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f7405c89e8de49439fe093eee6fa9e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PatientVisualController
+  animationFrames:
+  - {fileID: 3373568495408583166, guid: f5c3e60bc81d37b4386e75496bc55f37, type: 3}
+  - {fileID: 5540668397679465389, guid: f5c3e60bc81d37b4386e75496bc55f37, type: 3}
+  - {fileID: -4610566733436411102, guid: f5c3e60bc81d37b4386e75496bc55f37, type: 3}
+  - {fileID: 6581866111006463381, guid: f5c3e60bc81d37b4386e75496bc55f37, type: 3}
+  - {fileID: -2018457221746656894, guid: f5c3e60bc81d37b4386e75496bc55f37, type: 3}
+  sunglassesSprite: {fileID: 21300000, guid: d2ae39ced0cecdc409c708953e7a904f, type: 3}
 --- !u!1 &5378601697315828359
 GameObject:
   m_ObjectHideFlags: 0

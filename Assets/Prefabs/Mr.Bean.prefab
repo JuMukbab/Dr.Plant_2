@@ -229,6 +229,7 @@ GameObject:
   - component: {fileID: 2450237277010094745}
   - component: {fileID: -7171223335437926624}
   - component: {fileID: 3424136027524221790}
+  - component: {fileID: 231921825214576044}
   m_Layer: 0
   m_Name: Mr.Bean
   m_TagString: Plant
@@ -254,7 +255,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &785280648614191807
 SpriteRenderer:
-  serializedVersion: 2
+  serializedVersion: 3
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -311,6 +312,7 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+  m_BlendShapeWeights: []
 --- !u!114 &17811465256974477
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -396,13 +398,13 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 2.4, y: 3.1}
+    oldSize: {x: 3.2, y: 3.2}
     newSize: {x: 2.4, y: 3.1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 2.6, y: 3.2}
+  m_Size: {x: 2.45, y: 2.45}
   m_EdgeRadius: 0
 --- !u!114 &-7171223335437926624
 MonoBehaviour:
@@ -431,3 +433,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PatientReview
   reviewObject: {fileID: 5734961812872133747}
   reviewText: {fileID: 1746338156069055152}
+--- !u!114 &231921825214576044
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7808518742635211303}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f7405c89e8de49439fe093eee6fa9e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PatientVisualController
+  animationFrames:
+  - {fileID: 4495422397181781673, guid: 3325a2d8f9898b34d8d8711ece4ad313, type: 3}
+  - {fileID: 2679770912503586980, guid: 3325a2d8f9898b34d8d8711ece4ad313, type: 3}
+  - {fileID: -8186144845388961140, guid: 3325a2d8f9898b34d8d8711ece4ad313, type: 3}
+  - {fileID: -818972192877959004, guid: 3325a2d8f9898b34d8d8711ece4ad313, type: 3}
+  - {fileID: 1255155265385891842, guid: 3325a2d8f9898b34d8d8711ece4ad313, type: 3}
+  - {fileID: 1512619164392636912, guid: 3325a2d8f9898b34d8d8711ece4ad313, type: 3}
+  - {fileID: 5769019858189665522, guid: 3325a2d8f9898b34d8d8711ece4ad313, type: 3}
+  sunglassesSprite: {fileID: 21300000, guid: d2ae39ced0cecdc409c708953e7a904f, type: 3}

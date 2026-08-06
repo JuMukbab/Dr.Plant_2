@@ -18,8 +18,8 @@ public class TalkManager : MonoBehaviour
         new Dictionary<PatientId, AudioClip>();
     private float lastTypingSoundTime = float.NegativeInfinity;
 
-    private const float MasterTypingVolume = 2.4f;
-    private const float TypingSoundInterval = 0.05f;
+    private const float MasterTypingVolume = 1f;
+    private const float TypingSoundInterval = 0.032f;
 
     private void Awake()
     {

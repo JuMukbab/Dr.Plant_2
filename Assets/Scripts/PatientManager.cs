@@ -108,6 +108,11 @@ public class PatientManager : MonoBehaviour
         }
 
         status.Initialize(currentCase);
+
+        PatientVisualController visual =
+            currentPatient.GetComponent<PatientVisualController>();
+        visual?.Initialize(currentCase.Patient, currentCase.Symptoms);
+
         StatusBar.Instance?.SetTarget(status);
         ChecklistManager.Instance?.ResetSelections();
         ActiveCaseChanged?.Invoke(currentCase);
@@ -151,6 +156,12 @@ public class PatientManager : MonoBehaviour
         PlantStatus status = currentPatient.GetComponent<PlantStatus>();
         if (status != null)
             status.treated = true;
+
+        PatientVisualController visual =
+            currentPatient.GetComponent<PatientVisualController>();
+        visual?.ApplyTreatmentResult(
+            outcome.IsCorrect,
+            selectedTreatments);
 
         ClinicProgress.Instance.CompleteTreatment(outcome.Reward);
 

@@ -1,22 +1,22 @@
 fileFormatVersion: 2
-guid: f5c3e60bc81d37b4386e75496bc55f37
+guid: 409783a4ac1900d47a452a75b4036f91
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 3373568495408583166
-    second: Flower_0
+      213: 6010464026057754355
+    second: Succulent_0
   - first:
-      213: 5540668397679465389
-    second: Flower_1
+      213: -4965359238830839847
+    second: Succulent_1
   - first:
-      213: -4610566733436411102
-    second: Flower_2
+      213: -4889270540774947661
+    second: Succulent_2
   - first:
-      213: 6581866111006463381
-    second: Flower_3
+      213: -6180202647530699047
+    second: Succulent_3
   - first:
-      213: -2018457221746656894
-    second: Flower_4
+      213: 3633215822429951322
+    second: Succulent_4
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -109,19 +109,6 @@ TextureImporter:
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
-    buildTarget: Android
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
     buildTarget: WebGL
     maxTextureSize: 2048
     resizeAlgorithm: 0
@@ -138,7 +125,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Flower_0
+      name: Succulent_0
       rect:
         serializedVersion: 2
         x: 0
@@ -153,14 +140,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: ef117423ca251de20800000000000000
-      internalID: 3373568495408583166
+      spriteID: 3f6cf68df25796350800000000000000
+      internalID: 6010464026057754355
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Flower_1
+      name: Succulent_1
       rect:
         serializedVersion: 2
         x: 32
@@ -175,14 +162,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: da3daed4d8864ec40800000000000000
-      internalID: 5540668397679465389
+      spriteID: 9d7a8437410871bb0800000000000000
+      internalID: -4965359238830839847
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Flower_2
+      name: Succulent_2
       rect:
         serializedVersion: 2
         x: 64
@@ -197,14 +184,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 2232a48dbf9f300c0800000000000000
-      internalID: -4610566733436411102
+      spriteID: 3b4c35ef852d52cb0800000000000000
+      internalID: -4889270540774947661
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Flower_3
+      name: Succulent_3
       rect:
         serializedVersion: 2
         x: 96
@@ -219,14 +206,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 595d8b11b5c775b50800000000000000
-      internalID: 6581866111006463381
+      spriteID: 9d6010aaf628b3aa0800000000000000
+      internalID: -6180202647530699047
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Flower_4
+      name: Succulent_4
       rect:
         serializedVersion: 2
         x: 128
@@ -241,8 +228,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 289f77fd9dffcf3e0800000000000000
-      internalID: -2018457221746656894
+      spriteID: a5514487a86cb6230800000000000000
+      internalID: 3633215822429951322
       vertices: []
       indices: 
       edges: []
@@ -261,11 +248,11 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Flower_0: 3373568495408583166
-      Flower_1: 5540668397679465389
-      Flower_2: -4610566733436411102
-      Flower_3: 6581866111006463381
-      Flower_4: -2018457221746656894
+      Succulent_0: 6010464026057754355
+      Succulent_1: -4965359238830839847
+      Succulent_2: -4889270540774947661
+      Succulent_3: -6180202647530699047
+      Succulent_4: 3633215822429951322
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

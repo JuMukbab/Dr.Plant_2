@@ -35,6 +35,15 @@ public sealed class DrPlantUiScreenshotVerifier : MonoBehaviour
 
         yield return new WaitForSecondsRealtime(1f);
 
+        ClinicStartScreen startScreen = FindFirstObjectByType<ClinicStartScreen>();
+        if (startScreen != null)
+        {
+            yield return Capture(
+                Path.Combine(outputDirectory, $"menu-{width}x{height}.png"));
+            startScreen.StartClinic();
+            yield return null;
+        }
+
         float deadline = Time.realtimeSinceStartup + LoadTimeoutSeconds;
         while (!IsClinicReady() && Time.realtimeSinceStartup < deadline)
             yield return null;
